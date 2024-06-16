@@ -32,6 +32,8 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@aws-sdk/client-dynamodb": "^3.598.0",
+		"@aws-sdk/util-dynamodb": "^3.598.0",
 		"web-push": "^3.6.7"
 	}
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  let name: string;
   let subscribed: boolean | null = null;
   let existingSubscription: PushSubscription | null = null;
 
@@ -34,15 +35,28 @@
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(subscription)
+        body: JSON.stringify({
+          name,
+          subscription
+        })
       });
       const rBody = await r.json();
       console.log(rBody);
     } else {
       if (existingSubscription) {
-        const successfullyUnsubscribed = await existingSubscription.unsubscribe();
-        if (successfullyUnsubscribed) {
-          console.log('%c Successfully Unsubscribed', 'color: green');
+        const r = await fetch('/deleteSubscription', {
+          method: 'GET',
+          credentials: 'same-origin',
+        });
+        const rBody = await r.json();
+        console.log(rBody);
+        if (rBody.sucess) {
+          const successfullyUnsubscribed = await existingSubscription.unsubscribe();
+          if (successfullyUnsubscribed) {
+            console.log('%c Successfully Unsubscribed', 'color: green');
+          } else {
+            console.log('%c Couldnt Unsubscribe', 'color: red');
+          }
         } else {
           console.log('%c Couldnt Unsubscribe', 'color: red');
         }
@@ -78,6 +92,7 @@
     <h1>Loading...</h1>
   {:else}
     <h2>Push Notifications: </h2>
+    <input type="text" bind:value={name}>
     <button on:click={togglePushNotificationsSubscription}>{ subscribed ? 'Unsubscribe' : 'Subscribe' }</button>
   {/if}
 </div>

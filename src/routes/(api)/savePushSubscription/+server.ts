@@ -1,6 +1,7 @@
 import { PUSH_NOTIFICATIONS_PRIVATE_KEY, PUSH_NOTIFICATIONS_PUBLIC_KEY } from '$env/static/private';
+import DynamoDBService from '$lib/services/DynamoDBService.js';
+import { marshall } from '@aws-sdk/util-dynamodb';
 import { json } from '@sveltejs/kit';
-import { appendFile } from 'fs/promises';
 import webPush from 'web-push';
 
 // TODO: move to a hook
@@ -10,13 +11,23 @@ webPush.setVapidDetails(
   PUSH_NOTIFICATIONS_PRIVATE_KEY,
 );
 
-export async function POST({ request }) {
+export async function POST({ request, cookies }) {
   try {
-    const pushSubscription = await request.json();
+    const reqBody = await request.json();
 
-    console.log('saving push subscription: ', pushSubscription);
+    const userAgent = request.headers.get('user-agent') ?? '';
 
-    await appendFile('./subscriptions.txt', JSON.stringify(pushSubscription) + '\n');  
+    console.log('saving push subscription: ', reqBody);
+
+    const subscriptionExists = await DynamoDBService.exists(reqBody.name);
+
+    if (subscriptionExists) {
+      return json({ success: false, message: 'Subscription already exists!' });
+    }
+
+    await DynamoDBService.createSubscription(reqBody.name, userAgent, marshall(reqBody.subscription));
+
+    cookies.set('name', reqBody.name, { httpOnly: true, secure: true, sameSite: 'strict', path: '/' });
 
     return json({ success: true });
   } catch (error) {

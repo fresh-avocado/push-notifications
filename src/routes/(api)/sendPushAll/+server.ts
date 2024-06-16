@@ -1,8 +1,10 @@
 import { PUSH_NOTIFICATIONS_PRIVATE_KEY, PUSH_NOTIFICATIONS_PUBLIC_KEY } from '$env/static/private';
+import DynamoDBService from '$lib/services/DynamoDBService.js';
 import { json } from '@sveltejs/kit';
 import webPush from 'web-push';
-import { readFile } from 'fs/promises';
+import { unmarshall } from "@aws-sdk/util-dynamodb";
 
+// TODO: move to hooks to initialize only once
 webPush.setVapidDetails(
   'mailto:gabrielsr10@gmail.com',
   PUSH_NOTIFICATIONS_PUBLIC_KEY,
@@ -12,15 +14,13 @@ webPush.setVapidDetails(
 export async function POST({ request }) {
   try {
     const pushOptions = await request.json();
-  
-    const fileBuffer = await readFile('./subscriptions.txt');
-    const fileString = fileBuffer.toString();
-    const lines = fileString.split('\n');
-    const cleanLines = lines.filter((line) => line.length > 0);
 
-    const notificationPromises = cleanLines.map((line) => {
+    const allSubscriptions = await DynamoDBService.getAllSubscriptions();
+
+    const notificationPromises = allSubscriptions.map((subscription) => {
+      console.log(unmarshall(subscription));
       return webPush.sendNotification(
-        JSON.parse(line),
+        unmarshall(subscription).subscription,
         JSON.stringify(pushOptions),
       );
     });
