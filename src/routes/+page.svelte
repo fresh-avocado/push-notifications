@@ -87,6 +87,13 @@
         subscribed = false;
       } catch (error) {
         console.error(`Registration failed with ${error}`);
+        fetch('/error', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(error),
+        });
       }
     } else {
       swSupported = false;
