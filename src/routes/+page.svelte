@@ -6,7 +6,7 @@
   let name: string;
   let subscribed: boolean | null = null;
   let existingSubscription: PushSubscription | null = null;
-  let swSupported: false;
+  let swSupported = true;
 
   function urlBase64ToUint8Array(base64String: string) {
     var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -67,6 +67,8 @@
     }
     subscribed = !subscribed;
   };
+
+  // TODO: instruct user to add app to Home Screen and Safari > Advanced > Feature Flags > Notifcations & Service Workers
 
   onMount(async () => {
     if ("serviceWorker" in navigator) {
