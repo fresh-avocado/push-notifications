@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  export let data;
+
   let name: string;
   let subscribed: boolean | null = null;
   let existingSubscription: PushSubscription | null = null;
+  let swSupported: false;
 
   function urlBase64ToUint8Array(base64String: string) {
     var padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -83,17 +86,27 @@
       } catch (error) {
         console.error(`Registration failed with ${error}`);
       }
+    } else {
+      swSupported = false;
     }
   });
 </script>
 
 <div class="center">
-  {#if subscribed === null}
-    <h1>Loading...</h1>
+  {#if swSupported}
+    {#if subscribed === null}
+      <h1>Loading...</h1>
+    {:else}
+      <h2>Push Notifications: </h2>
+      {#if !existingSubscription}
+        <input type="text" bind:value={name}>
+      {:else}
+        <h2>You're subscribed as {data.name}</h2>
+      {/if}
+      <button on:click={togglePushNotificationsSubscription}>{ subscribed ? 'Unsubscribe' : 'Subscribe' }</button>
+    {/if}
   {:else}
-    <h2>Push Notifications: </h2>
-    <input type="text" bind:value={name}>
-    <button on:click={togglePushNotificationsSubscription}>{ subscribed ? 'Unsubscribe' : 'Subscribe' }</button>
+    <h1>Your browser doesn't support service workers</h1>
   {/if}
 </div>
 
