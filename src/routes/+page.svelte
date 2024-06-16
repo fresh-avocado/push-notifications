@@ -92,7 +92,7 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(error),
+          body: JSON.stringify(error, Object.getOwnPropertyNames(error)),
         });
       }
     } else {
