@@ -47,6 +47,12 @@
       console.log(rBody);
     } else {
       if (existingSubscription) {
+        const successfullyUnsubscribed = await existingSubscription.unsubscribe();
+        if (successfullyUnsubscribed) {
+          console.log('%c Successfully Unsubscribed', 'color: green');
+        } else {
+          console.log('%c Couldnt Unsubscribe', 'color: red');
+        }
         const r = await fetch('/deleteSubscription', {
           method: 'GET',
           credentials: 'same-origin',
@@ -54,12 +60,6 @@
         const rBody = await r.json();
         console.log(rBody);
         if (rBody.sucess) {
-          const successfullyUnsubscribed = await existingSubscription.unsubscribe();
-          if (successfullyUnsubscribed) {
-            console.log('%c Successfully Unsubscribed', 'color: green');
-          } else {
-            console.log('%c Couldnt Unsubscribe', 'color: red');
-          }
         } else {
           console.log('%c Couldnt Unsubscribe', 'color: red');
         }
@@ -73,6 +73,7 @@
   onMount(async () => {
     if ("serviceWorker" in navigator) {
       try {
+        // TODO: implement push for Safari
         await navigator.serviceWorker.register("/service-worker.js", {
           scope: "/",
         });
